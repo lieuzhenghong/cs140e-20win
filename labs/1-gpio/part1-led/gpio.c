@@ -47,11 +47,11 @@ void gpio_set_output(unsigned pin) {
     // First you need to use the correct select register
     // There are 54 pins and 6 registers
     unsigned register_num = pin / 10; // this will give a value from 0 to 5
-    unsigned volatile *addr = gpio_fsel0 + register_num; // the address of the register to write to
+    volatile unsigned *addr = gpio_fsel0 + register_num; // the address of the register to write to
     // we now need to go to the address and set it
     unsigned fsel_num = pin % 10; // this gives a number from 0 to 9
     unsigned tmp = get32(addr);
-    tmp &= ~(0b11 << (fsel_num * 3));
+    tmp &= ~(0b111 << (fsel_num * 3));
     tmp |= (1 << (fsel_num * 3));
     put32(addr, tmp);
 }
@@ -59,7 +59,7 @@ void gpio_set_output(unsigned pin) {
 // set GPIO <pin> on.
 void gpio_set_on(unsigned pin) {
     // use gpio_set0
-    unsigned volatile *addr = (gpio_set0 + pin/32);
+    volatile unsigned *addr = (gpio_set0 + pin/32);
     unsigned setn_num = pin % 32;
     put32(addr, 1 << setn_num);
 }
@@ -67,7 +67,7 @@ void gpio_set_on(unsigned pin) {
 // set GPIO <pin> off
 void gpio_set_off(unsigned pin) {
     // use gpio_clr0
-    unsigned volatile *addr = (gpio_clr0 + pin/32);
+    volatile unsigned *addr = (gpio_clr0 + pin/32);
     unsigned setn_num = pin % 32;
     put32(addr, 1 << setn_num);
 }
