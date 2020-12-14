@@ -2,19 +2,77 @@
 
 ## Motivation
 
-TODO
+The lab notes are kind of sparse and don't give much context/
+don't give the big picture of what we are doing.
+These notes aim to fill that gap.
 
-## How do programs run on the Raspi?
+## Lab 0
+
+In Lab 0 we wired the Pi up and made sure that everything worked.
+This lab was actually really hard because a lot of the devices
+are defective.
+
+- Test that all devices (LED, raspi, tty) works.
+- Install pi-install to /usr/local/bin for easier access
+- Run sample code on raspi
+
+## Lab 1
+
+Lab 1 made us read (part of) the Broadcom documentation 
+to write C code that set the state of the GPIO
+(by writing the right bits to the correct memory address).
+We wrote a file `gpio.c` that we compiled and sent over to the Pi
+using two provided programs, `pi-install` and `bootloader.bin`.
+
+- Using broadcom documentation to toggle GPIO on raspi
+  - Set GPIO state to be input, output or read/write
+- Write c code to perform the toggling.
+
+## Lab 2
+
+Did 14th December 2020 at 7pm with Weineng
+Finished at 1030pm
+
+Lab 2 is about building a bootloader file that allows for
+bidirectional communication over the USB-TTY connection
+using a provided acknowledgement protocol.
+This bootloader allows us to load a program into the Raspberry Pi's RAM
+over the connection and run that program.
+(This replaces the functionality given by `pi-install` and `bootloader.bin`).
+
+Previously we were only able to run programs on the Pi by using
+the "magic" program `pi-install`.
+
+In the process of writing the bootloader file we also had to write
+some helper functions
+as well as understand how the rest of the codebase worked.
+
+We modified the following files:
+
+- find-ttyusb.c (to find the TTY-USB device) `./labs/2-bootloader/unix-side/libunix/find-ttyusb.c`
+- read-file.c (helper function to read a file and pad it)
+- simple-boot.c (unix side listener)
+- bootloader.c (raspi side bootloader)
+
+`bootloader.c` is compiled to `kernel.img` and runs on Raspi startup.
+
+After finishing the assignment we were able to load in binary files
+that printed out "Hello World"
+and blinked an LED on GPIO pin 20 respectively.
+
+There were many unexplained things and here is my attempt to elucidate:
+
+### How do programs run on the Raspi?
 
 In lab 0 we copied several files like `bootcode.bin`, `start.elf`,
 `config.txt` and `kernel.img` into the SD card of the Raspi.
 Upon booting the Raspi the LED connected to GPIO port 20 started to blink.
 How does this work? What are these files, anyway?
 
-[From the 2018 offering of CS140e](https://cs140e.sergio.bz/assignments/0-blinky/):
+[The 2018 offering of CS140e](https://cs140e.sergio.bz/assignments/0-blinky/):
 
->  **What are bootcode.bin, config.txt, and start.elf?**
-> 
+> **What are bootcode.bin, config.txt, and start.elf?**
+>
 > These specially-named files are recognized by the Raspberry Pi’s GPU on
 boot-up and used to configure and boostrap the system. bootcode.bin is the
 GPU’s first-stage bootloader. Its primary job is to load start.elf, the GPU’s
@@ -32,9 +90,10 @@ rename it `kernel.img`,
 save it on the SD card,
 and then put it in the Raspi.
 
-## How do programs run on the Raspi? Part 2
+### How do programs run on the Raspi? Part 2
 
-Recall from computer architecture
+I believe the `kernel.img` file is a binary file
+that is being run line by line.
 
 What calls the `notmain` function? 
 To do this we have to look at `start.s`, an ARM64 assembler file:
@@ -52,7 +111,7 @@ hang: b reboot
 
 This is a little arcane, so let's do some Googling to explain it:
 
-### What's in start.s?
+#### What's in start.s?
 
 `sp` means stack pointer. 
 So we set the stack pointer to `0x080000`
@@ -66,7 +125,7 @@ to the instruction at the label `skip` or `reboot`
 > The BL instruction `bl label` causes a branch to `label`, 
 and copies the address of the next instruction into LR (R14, the link register).
 
-### How does bootloader.c run the received program?
+#### How does bootloader.c run the received program?
 
 If you look at line 145 of `bootloader.c` you'll see `BRANCHTO(ARMBASE)`.
 What does this function do? It turns out that this is an assembler function
