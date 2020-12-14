@@ -33,8 +33,6 @@ static int filter(const struct dirent *d) {
 // panic's if 0 or more than 1.
 //
 char *find_ttyusb(void) {
-    char *p;
-
     // use <alphasort> in <scandir>
     // return a malloc'd name so doesn't corrupt.
     struct dirent **fileListTemp;
@@ -48,10 +46,11 @@ char *find_ttyusb(void) {
         perror("to many file found");
         exit(1);
     }
-    p = (char*)malloc(strlen(fileListTemp[0]->d_name)+1);
-    strcpy(p, fileListTemp[0]->d_name);
+    char* path = malloc(strlen(fileListTemp[0]->d_name) + 1 + 5);
+    strcpy(path, "/dev/");
+    strcat(path, fileListTemp[0]->d_name) ;
 
     free(fileListTemp[0]);
     free(fileListTemp);
-    return p;
+    return path;
 }
