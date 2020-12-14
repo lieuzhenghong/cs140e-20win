@@ -10,8 +10,19 @@
 //
 // make sure to cleanup!
 uint8_t *read_file(unsigned *size, const char *name) {
-    uint8_t *buf = 0;
+    struct stat st;
+    stat(name, &st);
+    *size = st.st_size + st.st_size % 4;
 
-    unimplemented();
+    uint8_t *buf = calloc(*size, sizeof(uint8_t));
+    FILE *file;
+    size_t nread;
+
+    file = fopen(name, "r");
+    if (!file) {
+        return 0;
+    }
+    nread = fread(buf, 1, st.st_size, file);
+    fclose(file);
     return buf;
 }

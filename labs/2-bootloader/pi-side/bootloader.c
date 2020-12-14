@@ -97,7 +97,6 @@ void wait_for_data(void) {
 // Simple bootloader: put all of your code here: implement steps 2,3,4,5,6
 void notmain(void) {
     uart_init();
-
     // 1. keep sending GET_PROG_INFO until there is data.
     wait_for_data();
 
@@ -105,25 +104,49 @@ void notmain(void) {
      * Add your code below: 2,3,4,5,6
      */
 
-
     // 2. expect: [PUT_PROG_INFO, addr, nbytes, cksum] 
     //    we echo cksum back in step 4 to help debugging.
 
+    unsigned magic_value = get_uint();
+    if (magic_value != PUT_PROG_INFO) {
+        putk("Didn't receive PUT_PROG_INFO");
+        die(1);
+    }
+    unsigned char* armbaseaddr = get_uint();
+    unsigned code_size = get_uint();
+    unsigned checksum = get_uint();
 
     // 3. If the binary will collide with us, abort. 
     //    you can assume that code must be below where the booloader code
     //    gap starts.
-
+    // TODO check that code doesn't collide with its own running code
 
     // 4. send [GET_CODE, cksum] back.
-
+    put_uint(GET_CODE);
+    put_uint(checksum);
 
     // 5. expect: [PUT_CODE, <code>]
     //  read each sent byte and write it starting at 
     //  ARMBASE using PUT8
 
-    // 6. verify the cksum of the copied code.
+    // First receive the PUT_CODE
+    unsigned put_code = get_uint();
+    if (put_code != PUT_CODE) {
+        putk("Code received does not match PUT_CODE");
+        die(2);
+    }
+    int i;
+    unsigned char* currentaddr = armbaseaddr;
+    for (i = 0; i < code_size; ++i) {
+        *currentaddr = get_byte();
+        currentaddr++;
+    }
 
+    // 6. verify the cksum of the copied code.
+    if (checksum != crc32(armbaseaddr, code_size)) {
+        putk("Wrong checksum in binary file");
+        die(BAD_CODE_CKSUM);
+    };
 
     /****************************************************************
      * add your code above: don't modify below unless you want to 

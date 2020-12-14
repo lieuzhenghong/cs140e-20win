@@ -22,7 +22,7 @@ kernel.img : memmap start.o $(OBJS)  libpi.small/libpi.a
 
 # change this to copy whereever your sd is mounted.
 copy:
-	cp kernel.img /media/engler/0403-0201/
+	cp kernel.img /Volumes/boot/
 	sync
 
 clean :
