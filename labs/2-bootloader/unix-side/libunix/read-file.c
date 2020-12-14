@@ -12,7 +12,7 @@
 uint8_t *read_file(unsigned *size, const char *name) {
     struct stat st;
     stat(name, &st);
-    *size = st.st_size + st.st_size % 4;
+    *size = st.st_size + (4 - st.st_size % 4);
 
     uint8_t *buf = calloc(*size, sizeof(uint8_t));
     FILE *file;
