@@ -1,6 +1,8 @@
 #ifndef __GPIO_H__
 #define __GPIO_H__
 
+#include "rpi.h"
+
 // set <pin> to be an output pin.
 void gpio_set_output(unsigned pin);
 
