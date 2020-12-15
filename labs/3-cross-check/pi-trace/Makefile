@@ -1,7 +1,7 @@
 NAME := hello
 TNAME = $(NAME).trace
 # add the other functions you want to trace to this line.
-TRACE_FNS = GET32 #  PUT32 get32 put32
+TRACE_FNS = GET32 PUT32 get32 put32
 # turns them into the right linker flag arguments.
 TRACE_FLAGS := $(foreach o, $(TRACE_FNS), --wrap=$o)
 
