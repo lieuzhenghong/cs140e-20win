@@ -67,11 +67,19 @@ int main(int argc, char *argv[]) {
             test_gpio_set_output(N); 
             test_gpio_set_on(N); 
             test_gpio_set_off(N);
+            // TODO TEST WITH OTHERS
             break;
     case 4: 
-            //test_gpio_set_function(N);
+            test_gpio_set_function(N);
             break;
-
+    case 5:
+            test_gpio_set_input(N);
+            test_gpio_set_output(N); 
+            test_gpio_set_on(N); 
+            test_gpio_set_off(N);
+            test_gpio_set_function(N);
+            // TODO TEST WITH OTHERS
+            break;
     default: 
             fprintf(stderr, "invalid part<%s>\n", argv[1]);
             exit(1);

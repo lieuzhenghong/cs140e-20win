@@ -20,7 +20,7 @@
  *     one should be on, while the other is off).   Note, if they behave weirdly, look
  *     carefully at the wording for GPIO set.
  */
-#include "gpio.h"
+#include "rpi.h"
 
 /*
  * These routines are given by us and are in start.s
@@ -95,3 +95,16 @@ void gpio_write(unsigned pin, unsigned v) {
        gpio_set_off(pin);
 }
 
+void gpio_set_function(unsigned pin, gpio_func_t function) {
+  if (pin >= 32) {
+    return;
+  }
+  int fsel = pin / 10;
+   volatile unsigned *gpio_fsel = gpio_fsel0 + fsel;
+
+  unsigned data = get32(gpio_fsel);
+  unsigned bit_pos = 3 * (pin % 10);
+  data &= ~(0b111 << bit_pos); // clear the bits
+  data |= function << bit_pos;
+  put32(gpio_fsel, data);
+}
