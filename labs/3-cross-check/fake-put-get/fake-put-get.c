@@ -66,11 +66,58 @@ static void print_read(mem_t *m) {
     printf("\tTRACE:GET32(%p)=0x%x\n", m->addr, m->val);
 }
 
+#define MEM_SIZE 10000
+mem_t* ssd[MEM_SIZE];
+unsigned pos = 0;
+
+int getSSDPos(const volatile void *addr) {
+    int i;
+    for (i = 0; i < pos; ++i) {
+        if (ssd[i]->addr == addr) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+mem_t* putIntoSSD(const volatile void *addr, unsigned val) {
+    int ssdPos = getSSDPos(addr);
+    if (ssdPos != -1) {
+        // Data already exist, we just modify data.
+        mem_t* data = ssd[ssdPos];
+        data->val = val;
+        return data;
+    } else {
+        // Data does not exist at addr, we create new data.
+        if (pos > MEM_SIZE) {
+            // TODO panic here
+            return NULL;
+        }
+
+        mem_t* new_data = malloc(sizeof(mem_t));
+        new_data->addr = addr;
+        new_data->val = val;
+        ssd[pos] = new_data;
+        pos++;
+        return new_data;
+    }
+}
+
+
 unsigned get32(const volatile void *addr) {
-    unimplemented();
+    int ssdPos = getSSDPos(addr);
+    if (ssdPos != -1) {
+        print_read(ssd[ssdPos]);
+        return ssd[ssdPos]->val;
+    }
+    unsigned garbage = rand();
+    mem_t* data = putIntoSSD(addr, garbage);
+    print_read(data);
+    return garbage;
 }
 
 void put32(volatile void *addr, unsigned val) {
-    unimplemented();
+    mem_t* data = putIntoSSD(addr, val);
+    print_write(data);
 }
 
